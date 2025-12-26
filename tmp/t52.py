@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 import os
 
 set_tracing_disabled(disabled=True)
-provider = AsyncOpenAI(api_key=os.getenv("DASHSCOPE_API_KEY"), base_url=os.getenv("DASHOPENAI_BASE_URLSCOPE_API_KEY"))
+provider = AsyncOpenAI()
 model = OpenAIChatCompletionsModel(model="qwen3-max", openai_client=provider)
 
 async def get_weather(ctx, args: str) -> str:

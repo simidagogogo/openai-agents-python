@@ -1,37 +1,40 @@
 import asyncio
 import uuid
-
 from openai.types.responses import ResponseContentPartDoneEvent, ResponseTextDeltaEvent
-
-from agents import Agent, RawResponsesStreamEvent, Runner, TResponseInputItem, trace
+from agents import Agent, RawResponsesStreamEvent, Runner, TResponseInputItem, trace, OpenAIChatCompletionsModel
+from openai import AsyncOpenAI
 
 """
 This example shows the handoffs/routing pattern. The triage agent receives the first message, and
 then hands off to the appropriate agent based on the language of the request. Responses are
 streamed to the user.
 """
+model = OpenAIChatCompletionsModel(model="qwen3-max", openai_client=AsyncOpenAI())
 
 french_agent = Agent(
     name="french_agent",
     instructions="You only speak French",
+    model=model
 )
 
 spanish_agent = Agent(
     name="spanish_agent",
     instructions="You only speak Spanish",
+    model=model
 )
 
 english_agent = Agent(
     name="english_agent",
     instructions="You only speak English",
+    model=model
 )
 
 triage_agent = Agent(
     name="triage_agent",
     instructions="Handoff to the appropriate agent based on the language of the request.",
     handoffs=[french_agent, spanish_agent, english_agent],
+    model=model
 )
-
 
 async def main():
     # We'll create an ID for this conversation, so we can link each trace

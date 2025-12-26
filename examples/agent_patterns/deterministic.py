@@ -1,8 +1,10 @@
 import asyncio
-
 from pydantic import BaseModel
+from agents import Agent, Runner, trace, OpenAIChatCompletionsModel, set_tracing_disabled
+from openai import AsyncOpenAI
+import os
 
-from agents import Agent, Runner, trace
+set_tracing_disabled(disabled=True)
 
 """
 This example demonstrates a deterministic flow, where each step is performed by an agent.
@@ -14,29 +16,32 @@ This example demonstrates a deterministic flow, where each step is performed by 
 6. The third agent writes the story
 """
 
+provider = AsyncOpenAI()
+model = OpenAIChatCompletionsModel(model="qwen3-max", openai_client=provider)
+
 story_outline_agent = Agent(
     name="story_outline_agent",
     instructions="Generate a very short story outline based on the user's input.",
+    model=model
 )
-
 
 class OutlineCheckerOutput(BaseModel):
     good_quality: bool
     is_scifi: bool
 
-
 outline_checker_agent = Agent(
     name="outline_checker_agent",
     instructions="Read the given story outline, and judge the quality. Also, determine if it is a scifi story.",
     output_type=OutlineCheckerOutput,
+    model=model
 )
 
 story_agent = Agent(
     name="story_agent",
     instructions="Write a short story based on the given outline.",
     output_type=str,
+    model=model
 )
-
 
 async def main():
     input_prompt = input("What kind of story do you want? ")
@@ -74,7 +79,6 @@ async def main():
             outline_result.final_output,
         )
         print(f"Story: {story_result.final_output}")
-
 
 if __name__ == "__main__":
     asyncio.run(main())
